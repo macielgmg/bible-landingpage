@@ -59,31 +59,24 @@ const Login = () => {
       const normalizedEmail = emailForSignIn.trim().toLowerCase();
       console.log('Login: Checking email (normalized):', normalizedEmail);
 
-      // Adicionando log da consulta SQL para depuração
-      console.log(`Login: Executing query: SELECT email FROM authorized_users WHERE email ILIKE '${normalizedEmail}' LIMIT 1;`);
+      // Chamar a nova Edge Function para verificar a autorização do email
+      const { data, error } = await supabase.functions.invoke('check-email-authorization', {
+        body: { email: normalizedEmail },
+      });
 
-      const { data, error } = await supabase
-        .from('authorized_users')
-        .select('email')
-        .ilike('email', normalizedEmail)
-        .limit(1); // ALTERADO: Usando limit(1) em vez de maybeSingle()
-
-      console.log('Login: Raw response from authorized_users query:', { data, error });
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Login: Erro ao verificar email em authorized_users:', error);
+      if (error) {
+        console.error('Login: Erro ao chamar Edge Function check-email-authorization:', error);
         showError('Ocorreu um erro ao verificar seu email. Tente novamente.');
         return;
       }
 
-      // Verifica se algum dado foi retornado
-      if (!data || data.length === 0) { // ALTERADO: Verificando data.length
-        console.log('Login: Email not found in authorized_users (after ilike and limit 1):', normalizedEmail);
+      if (!data || !data.isAuthorized) {
+        console.log('Login: Email not authorized by Edge Function:', normalizedEmail);
         showError('Este email não está autorizado a acessar o aplicativo. Por favor, entre em contato com o suporte.');
         return;
       }
 
-      console.log('Login: Email found in authorized_users (after ilike and limit 1):', normalizedEmail);
+      console.log('Login: Email authorized by Edge Function:', normalizedEmail);
       setCurrentScreen('signIn');
     } catch (err) {
       console.error('Login: Erro inesperado ao verificar email:', err);
@@ -201,7 +194,7 @@ const Login = () => {
         <OnboardingLoading onComplete={handleOnboardingLoadingComplete} />
       )}
       {currentScreen === 'welcomeScreen' && (
-        <WelcomeScreen onComplete={handleWelcomeScreenContinue} />
+        <WelcomeScreen onContinue={handleWelcomeScreenContinue} />
       )}
     </div>
   );
