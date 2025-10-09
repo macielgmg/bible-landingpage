@@ -84,7 +84,19 @@ const Login = () => {
       }
 
       console.log('Login: Email authorized by Edge Function:', normalizedEmail);
-      setCurrentScreen('signIn');
+      
+      // NOVO: Verificar o status passwordChanged
+      if (!data.passwordChanged) {
+        console.log('Login: Password not changed, redirecting to set-new-password.');
+        // Redireciona para a página de definição de senha.
+        // O usuário já está "logado" no sentido de que o email foi verificado,
+        // mas precisa definir a senha antes de acessar o app principal.
+        // Usamos `replace: true` para que a página de login não fique no histórico.
+        navigate('/set-new-password', { replace: true });
+      } else {
+        console.log('Login: Password already changed, proceeding to sign in.');
+        setCurrentScreen('signIn');
+      }
     } catch (err) {
       console.error('Login: Erro inesperado ao verificar email:', err);
       showError('Ocorreu um erro inesperado.');

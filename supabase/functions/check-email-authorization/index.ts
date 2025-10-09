@@ -25,7 +25,7 @@ serve(async (req) => {
     // Check if the email is in the authorized_users table
     const { data: authorizedUser, error: authError } = await supabaseAdmin
       .from('authorized_users')
-      .select('email')
+      .select('email, password_changed') // Agora seleciona também 'password_changed'
       .eq('email', email) // Usa o email normalizado aqui
       .maybeSingle();
 
@@ -37,7 +37,10 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ isAuthorized: !!authorizedUser }), {
+    return new Response(JSON.stringify({ 
+      isAuthorized: !!authorizedUser,
+      passwordChanged: authorizedUser?.password_changed ?? false // Retorna o status, default false
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
