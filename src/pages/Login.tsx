@@ -10,6 +10,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showError } from '@/utils/toast';
+import { UnauthorizedEmailModal } from "@/components/UnauthorizedEmailModal"; // Importar o novo modal
 
 const Login = () => {
   const { session, loading } = useSession();
@@ -18,6 +19,7 @@ const Login = () => {
   const [currentScreen, setCurrentScreen] = useState<'emailInput' | 'signIn' | 'forgotPassword' | 'onboardingLoading' | 'welcomeScreen'>('emailInput');
   const [emailForSignIn, setEmailForSignIn] = useState('');
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [showUnauthorizedModal, setShowUnauthorizedModal] = useState(false); // Estado para controlar o modal
 
   useEffect(() => {
     if (session?.user) {
@@ -48,6 +50,11 @@ const Login = () => {
     navigate('/onboarding-quiz');
   };
 
+  const handleContactSupport = () => {
+    setShowUnauthorizedModal(false); // Fecha o modal
+    navigate('/help-and-support'); // Navega para a página de ajuda e suporte
+  };
+
   const handleContinueWithEmail = async () => {
     if (!emailForSignIn) {
       showError("Por favor, digite seu email.");
@@ -72,7 +79,7 @@ const Login = () => {
 
       if (!data || !data.isAuthorized) {
         console.log('Login: Email not authorized by Edge Function:', normalizedEmail);
-        showError('Este email não está autorizado a acessar o aplicativo. Por favor, entre em contato com o suporte.');
+        setShowUnauthorizedModal(true); // Exibe o modal de email não autorizado
         return;
       }
 
@@ -196,6 +203,15 @@ const Login = () => {
       {currentScreen === 'welcomeScreen' && (
         <WelcomeScreen onContinue={handleWelcomeScreenContinue} />
       )}
+
+      <UnauthorizedEmailModal
+        isOpen={showUnauthorizedModal}
+        onClose={() => {
+          setShowUnauthorizedModal(false);
+          setEmailForSignIn(''); // Limpa o email para nova tentativa
+        }}
+        onContactSupport={handleContactSupport}
+      />
     </div>
   );
 };

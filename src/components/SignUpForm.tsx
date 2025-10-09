@@ -59,6 +59,11 @@ export const SignUpForm = ({ onSignUpSuccess }: SignUpFormProps) => {
     },
   });
 
+  const handleContactSupport = () => {
+    setShowUnauthorizedModal(false); // Fecha o modal
+    navigate('/help-and-support'); // Navega para a página de ajuda e suporte
+  };
+
   const onSubmit = async (values: SignUpFormValues) => {
     setIsLoading(true);
     try {
@@ -110,11 +115,6 @@ export const SignUpForm = ({ onSignUpSuccess }: SignUpFormProps) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleContactSupport = () => {
-    setShowUnauthorizedModal(false); // Fecha o modal
-    navigate('/help-and-support'); // Navega para a página de ajuda e suporte
   };
 
   return (
