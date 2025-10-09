@@ -6,14 +6,10 @@ import { useSession } from '@/contexts/SessionContext';
 import { Logo } from '@/components/Logo';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2 } from 'lucide-react'; // NOVO: Importar Loader2
-// Removido: import { SignUpForm } from '@/components/SignUpForm';
-import { OnboardingLoading } from '@/components/OnboardingLoading';
-import { WelcomeScreen } from '@/components/WelcomeScreen';
-import { logUserActivity } from '@/utils/logging';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { showError } from '@/utils/toast'; // Importar showError
+import { showError } from '@/utils/toast';
 
 const Login = () => {
   const { session, loading } = useSession();
@@ -21,9 +17,8 @@ const Login = () => {
   
   const [currentScreen, setCurrentScreen] = useState<'emailInput' | 'signIn' | 'forgotPassword' | 'onboardingLoading' | 'welcomeScreen'>('emailInput');
   const [emailForSignIn, setEmailForSignIn] = useState('');
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false); // NOVO: Estado para verificar email
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
-  // Efeito para logar o login do usuário
   useEffect(() => {
     if (session?.user) {
       logUserActivity(session.user.id, 'user_login', `Usuário ${session.user.email} logou.`);
@@ -41,7 +36,6 @@ const Login = () => {
     );
   }
 
-  // If session exists, always redirect to /today. AuthProtectedRoute will handle onboarding.
   if (session) {
     return <Navigate to="/today" replace />;
   }
@@ -62,28 +56,34 @@ const Login = () => {
 
     setIsCheckingEmail(true);
     try {
+      // Normalizar o email: remover espaços e converter para minúsculas
+      const normalizedEmail = emailForSignIn.trim().toLowerCase();
+      console.log('Login: Checking email:', normalizedEmail);
+
       // Verificar se o email existe na tabela authorized_users
       const { data, error } = await supabase
         .from('authorized_users')
         .select('email')
-        .eq('email', emailForSignIn)
+        .eq('email', normalizedEmail) // Usar o email normalizado na consulta
         .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found"
-        console.error('Erro ao verificar email em authorized_users:', error);
+      if (error && error.code !== 'PGRST116') {
+        console.error('Login: Erro ao verificar email em authorized_users:', error);
         showError('Ocorreu um erro ao verificar seu email. Tente novamente.');
         return;
       }
 
       if (!data) {
+        console.log('Login: Email not found in authorized_users:', normalizedEmail);
         showError('Este email não está autorizado a acessar o aplicativo. Por favor, entre em contato com o suporte.');
         return;
       }
 
+      console.log('Login: Email found in authorized_users:', normalizedEmail);
       // Se o email está autorizado, prossegue para a tela de login
       setCurrentScreen('signIn');
     } catch (err) {
-      console.error('Erro inesperado ao verificar email:', err);
+      console.error('Login: Erro inesperado ao verificar email:', err);
       showError('Ocorreu um erro inesperado.');
     } finally {
       setIsCheckingEmail(false);
@@ -124,7 +124,7 @@ const Login = () => {
         }}
         theme="light"
         view={view}
-        showLinks={false} // Mantido para esconder links de signup/forgot password internos do Auth
+        showLinks={false}
         localization={{
           variables: {
             sign_in: {
@@ -135,7 +135,6 @@ const Login = () => {
               password_input_placeholder: 'Sua senha',
               link_text: 'Esqueceu sua senha?',
             },
-            // Removido o bloco sign_up
             forgotten_password: {
               email_label: 'Email',
               password_label: 'Sua senha', 
