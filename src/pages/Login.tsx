@@ -6,7 +6,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { Logo } from '@/components/Logo';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react'; // NOVO: Importar Loader2
 // Removido: import { SignUpForm } from '@/components/SignUpForm';
 import { OnboardingLoading } from '@/components/OnboardingLoading';
 import { WelcomeScreen } from '@/components/WelcomeScreen';

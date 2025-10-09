@@ -45,7 +45,7 @@ import SharedContentPage from "./pages/SharedContentPage";
 import { PwaUpdatePrompt } from "./components/PwaUpdatePrompt";
 import { AnnouncementPopup } from "./components/AnnouncementPopup";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
-import SetNewPasswordPage from "./pages/SetNewPasswordPage"; // NOVO: Importar SetNewPasswordPage
+import SetNewPasswordPage from "./pages/SetNewPasswordPage";
 
 
 const queryClient = new QueryClient();
@@ -58,6 +58,7 @@ const App = () => (
           <Toaster />
           <BrowserRouter>
             <SessionProvider>
+              {/* Componentes que usam useSession devem estar dentro do SessionProvider */}
               <ConditionalSonnerToaster />
               <PwaUpdatePrompt />
               <AnnouncementPopup />
