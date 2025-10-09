@@ -44,7 +44,8 @@ import ShareImageCreatorPage from "./pages/ShareImageCreatorPage";
 import SharedContentPage from "./pages/SharedContentPage";
 import { PwaUpdatePrompt } from "./components/PwaUpdatePrompt";
 import { AnnouncementPopup } from "./components/AnnouncementPopup";
-import { PWAInstallPrompt } from "./components/PWAInstallPrompt"; // NOVO: Importar PWAInstallPrompt
+import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
+import SetNewPasswordPage from "./pages/SetNewPasswordPage"; // NOVO: Importar SetNewPasswordPage
 
 
 const queryClient = new QueryClient();
@@ -60,11 +61,13 @@ const App = () => (
               <ConditionalSonnerToaster />
               <PwaUpdatePrompt />
               <AnnouncementPopup />
-              <PWAInstallPrompt /> {/* NOVO: Adicionar o componente de prompt de instalação PWA aqui */}
+              <PWAInstallPrompt />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/share/:templateId" element={<SharedContentPage />} />
+                {/* NOVO: Rota para definir nova senha, protegida por AuthProtectedRoute */}
+                <Route path="/set-new-password" element={<AuthProtectedRoute><SetNewPasswordPage /></AuthProtectedRoute>} />
                 {/* Onboarding Quiz is now protected by AuthProtectedRoute */}
                 <Route path="/onboarding-quiz" element={<AuthProtectedRoute><OnboardingQuiz /></AuthProtectedRoute>} />
                 

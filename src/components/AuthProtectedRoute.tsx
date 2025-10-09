@@ -8,7 +8,7 @@ interface AuthProtectedRouteProps {
 }
 
 const AuthProtectedRoute = ({ children }: AuthProtectedRouteProps) => {
-  const { session, loading: sessionLoading, onboardingCompleted } = useSession();
+  const { session, loading: sessionLoading, onboardingCompleted, passwordChanged } = useSession(); // NOVO: Adicionado passwordChanged
   const location = useLocation();
 
   if (sessionLoading) {
@@ -25,6 +25,11 @@ const AuthProtectedRoute = ({ children }: AuthProtectedRouteProps) => {
   if (!session) {
     // If not logged in, redirect to login page
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  // NOVO: Se o usuário está logado, mas a senha não foi alterada, redireciona para a página de definição de senha
+  if (!passwordChanged && location.pathname !== '/set-new-password') {
+    return <Navigate to="/set-new-password" replace state={{ from: location }} />;
   }
 
   if (!onboardingCompleted && location.pathname !== '/onboarding-quiz') {

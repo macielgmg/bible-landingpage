@@ -35,11 +35,12 @@ interface SessionContextType {
   setDeferredPWAInstallPrompt: (event: Event | null) => void;
   setIsPWAInstalled: (installed: boolean) => void;
   setShowPWAInstallPrompt: (show: boolean) => void;
+  passwordChanged: boolean; // NOVO: Adicionado status de mudança de senha
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
-export const SessionProvider = ({ children }: { children: ReactNode }) => {
+export const SessionProvider = ({ children }: { ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -58,6 +59,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [deferredPWAInstallPrompt, setDeferredPWAInstallPrompt] = useState<Event | null>(null);
   const [isPWAInstalled, setIsPWAInstalled] = useState(false);
   const [showPWAInstallPrompt, setShowPWAInstallPrompt] = useState(false);
+  const [passwordChanged, setPasswordChanged] = useState(true); // NOVO: Estado para passwordChanged, default true
 
   const fetchProfile = useCallback(async (user: User | null) => {
     if (!user) {
@@ -73,6 +75,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       setTotalShares(0);
       setTotalJournalEntries(0);
       setLatestUnseenAnnouncement(null);
+      setPasswordChanged(true); // Resetar para true se não houver usuário
       return;
     }
 
@@ -83,7 +86,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('first_name,last_name,avatar_url,onboarding_completed,quiz_responses,preferences,daily_verse_notifications,study_reminders,achievement_notifications,enable_popups,total_shares,total_journal_entries')
+        .select('first_name,last_name,avatar_url,onboarding_completed,quiz_responses,preferences,daily_verse_notifications,study_reminders,achievement_notifications,enable_popups,total_shares,total_journal_entries,password_changed') // NOVO: Selecionando password_changed
         .eq('id', user.id)
         .single();
       profileData = data;
@@ -108,6 +111,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
           enable_popups: true,
           total_shares: 0,
           total_journal_entries: 0,
+          password_changed: false, // NOVO: Definir como false no novo perfil
         })
         .select('*')
         .single();
@@ -135,7 +139,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       setEnablePopups(profileData.enable_popups ?? true);
       setTotalShares(profileData.total_shares ?? 0);
       setTotalJournalEntries(profileData.total_journal_entries ?? 0);
+      setPasswordChanged(profileData.password_changed ?? true); // NOVO: Definir passwordChanged
       console.log('fetchProfile: Set onboardingCompleted to:', profileData.onboarding_completed ?? false);
+      console.log('fetchProfile: Set passwordChanged to:', profileData.password_changed ?? true);
     } else {
       console.log('fetchProfile: Profile data still not available, using user_metadata for name and setting defaults.');
       setFullName(user.user_metadata.first_name || user.user_metadata.last_name ? [user.user_metadata.first_name, user.user_metadata.last_name].filter(Boolean).join(' ') : null);
@@ -146,7 +152,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       setEnablePopups(true);
       setTotalShares(0);
       setTotalJournalEntries(0);
+      setPasswordChanged(true); // Default para true se o perfil não for encontrado
       console.log('fetchProfile: Set onboardingCompleted to false (profile not found).');
+      console.log('fetchProfile: Set passwordChanged to true (profile not found).');
     }
 
     const { data: adminData, error: adminError } = await supabase
@@ -371,6 +379,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       setDeferredPWAInstallPrompt,
       setIsPWAInstalled,
       setShowPWAInstallPrompt,
+      passwordChanged, // NOVO: Adicionado passwordChanged ao contexto
     }}>
       {children}
     </SessionContext.Provider>
