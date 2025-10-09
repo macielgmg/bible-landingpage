@@ -84,22 +84,21 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
 
     console.log('fetchProfile: Fetching profile for user ID:', user.id);
     
-    // NOVO: 1. Verificar se o email do usuário está na tabela authorized_users
-    const { data: authUser, error: authUserError } = await supabase
+    // 1. Verificar se o email do usuário está na tabela authorized_users e buscar password_changed
+    const { data: authUserEntry, error: authUserEntryError } = await supabase
       .from('authorized_users')
-      .select('email')
+      .select('email, password_changed') // Selecionar password_changed aqui
       .eq('email', user.email)
       .maybeSingle();
 
-    if (authUserError && authUserError.code !== 'PGRST116') {
-      console.error('fetchProfile: Error checking authorized_users:', authUserError);
+    if (authUserEntryError && authUserEntryError.code !== 'PGRST116') {
+      console.error('fetchProfile: Error checking authorized_users:', authUserEntryError);
       setIsAuthorized(false);
-      // Em caso de erro crítico ao verificar autorização, deslogar o usuário
       await supabase.auth.signOut();
       return;
     }
 
-    if (!authUser) {
+    if (!authUserEntry) {
       console.log('fetchProfile: User email not found in authorized_users. Signing out.');
       setIsAuthorized(false);
       await supabase.auth.signOut(); // Deslogar usuário não autorizado
@@ -107,6 +106,8 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
     } else {
       console.log('fetchProfile: User email found in authorized_users.');
       setIsAuthorized(true);
+      setPasswordChanged(authUserEntry.password_changed ?? false); // Definir de authorized_users, default para false
+      console.log('fetchProfile: Set passwordChanged from authorized_users to:', authUserEntry.password_changed ?? false);
     }
 
     let profileData = null;
@@ -115,7 +116,7 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('first_name,last_name,avatar_url,onboarding_completed,quiz_responses,preferences,daily_verse_notifications,study_reminders,achievement_notifications,enable_popups,total_shares,total_journal_entries,password_changed')
+        .select('first_name,last_name,avatar_url,onboarding_completed,quiz_responses,preferences,daily_verse_notifications,study_reminders,achievement_notifications,enable_popups,total_shares,total_journal_entries') // Removido password_changed
         .eq('id', user.id)
         .single();
       profileData = data;
@@ -140,7 +141,7 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
           enable_popups: true,
           total_shares: 0,
           total_journal_entries: 0,
-          password_changed: false,
+          // Removido password_changed daqui
         })
         .select('*')
         .single();
@@ -168,9 +169,7 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
       setEnablePopups(profileData.enable_popups ?? true);
       setTotalShares(profileData.total_shares ?? 0);
       setTotalJournalEntries(profileData.total_journal_entries ?? 0);
-      setPasswordChanged(profileData.password_changed ?? true);
       console.log('fetchProfile: Set onboardingCompleted to:', profileData.onboarding_completed ?? false);
-      console.log('fetchProfile: Set passwordChanged to:', profileData.password_changed ?? true);
     } else {
       console.log('fetchProfile: Profile data still not available, using user_metadata for name and setting defaults.');
       setFullName(user.user_metadata.first_name || user.user_metadata.last_name ? [user.user_metadata.first_name, user.user_metadata.last_name].filter(Boolean).join(' ') : null);
@@ -181,9 +180,8 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
       setEnablePopups(true);
       setTotalShares(0);
       setTotalJournalEntries(0);
-      setPasswordChanged(true); // Default para true se o perfil não for encontrado
+      // passwordChanged já foi definido de authorized_users
       console.log('fetchProfile: Set onboardingCompleted to false (profile not found).');
-      console.log('fetchProfile: Set passwordChanged to true (profile not found).');
     }
 
     const { data: adminData, error: adminError } = await supabase

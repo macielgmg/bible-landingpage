@@ -62,18 +62,15 @@ const SetNewPasswordPage = () => {
         throw updateAuthError;
       }
 
-      // 2. Atualizar o campo password_changed no perfil do usuário para true
-      const { error: updateProfileError } = await supabase
-        .from('profiles')
+      // 2. Atualizar o campo password_changed na tabela authorized_users para true
+      const { error: updateAuthorizedUserError } = await supabase
+        .from('authorized_users')
         .update({ password_changed: true })
-        .eq('id', session.user.id);
+        .eq('email', session.user.email); // Usar o email do usuário para identificar a linha
 
-      if (updateProfileError) {
-        // Se houver erro aqui, a senha foi alterada, mas o status não.
-        // O usuário pode precisar tentar novamente ou entrar em contato com o suporte.
-        console.error("Erro ao atualizar status 'password_changed' no perfil:", updateProfileError);
+      if (updateAuthorizedUserError) {
+        console.error("Erro ao atualizar status 'password_changed' em authorized_users:", updateAuthorizedUserError);
         showError("Senha atualizada, mas houve um erro ao registrar a mudança. Por favor, entre em contato com o suporte.");
-        // Ainda assim, tentamos redirecionar, pois a senha foi alterada.
       }
 
       showSuccess("Senha definida com sucesso! Bem-vindo(a)!");
@@ -140,8 +137,7 @@ const SetNewPasswordPage = () => {
                 Definir Senha e Continuar
               </Button>
             </form>
-          </Form>
-        </CardContent>
+          </CardContent>
       </Card>
     </div>
   );
