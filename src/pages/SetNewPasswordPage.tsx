@@ -137,7 +137,8 @@ const SetNewPasswordPage = () => {
                 Definir Senha e Continuar
               </Button>
             </form>
-          </CardContent>
+          </Form>
+        </CardContent>
       </Card>
     </div>
   );
