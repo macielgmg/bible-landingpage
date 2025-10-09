@@ -83,12 +83,16 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
     }
 
     console.log('fetchProfile: Fetching profile for user ID:', user.id);
+    console.log('fetchProfile: User email from session:', user.email);
     
     // 1. Verificar se o email do usuário está na tabela authorized_users e buscar password_changed
+    const normalizedEmail = user.email?.trim().toLowerCase() || ''; // Normalizar o email da sessão
+    console.log('fetchProfile: Normalized email for authorized_users query:', normalizedEmail);
+
     const { data: authUserEntry, error: authUserEntryError } = await supabase
       .from('authorized_users')
       .select('email, password_changed') // Selecionar password_changed aqui
-      .eq('email', user.email)
+      .eq('email', normalizedEmail) // Usar o email normalizado na consulta
       .maybeSingle();
 
     if (authUserEntryError && authUserEntryError.code !== 'PGRST116') {
@@ -99,12 +103,12 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
     }
 
     if (!authUserEntry) {
-      console.log('fetchProfile: User email not found in authorized_users. Signing out.');
+      console.log('fetchProfile: User email NOT found in authorized_users for normalized email:', normalizedEmail, '. Signing out.');
       setIsAuthorized(false);
       await supabase.auth.signOut(); // Deslogar usuário não autorizado
       return; // Parar o processamento do perfil para usuário não autorizado
     } else {
-      console.log('fetchProfile: User email found in authorized_users.');
+      console.log('fetchProfile: User email FOUND in authorized_users for normalized email:', normalizedEmail, '. Entry:', authUserEntry);
       setIsAuthorized(true);
       setPasswordChanged(authUserEntry.password_changed ?? false); // Definir de authorized_users, default para false
       console.log('fetchProfile: Set passwordChanged from authorized_users to:', authUserEntry.password_changed ?? false);
