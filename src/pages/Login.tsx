@@ -21,7 +21,7 @@ const Login = () => {
 
   useEffect(() => {
     if (session?.user) {
-      logUserActivity(session.user.id, 'user_login', `Usuário ${session.user.email} logou.`);
+      // logUserActivity(session.user.id, 'user_login', `Usuário ${session.user.email} logou.`); // Removido para evitar loop de log
     }
   }, [session]);
 
@@ -58,28 +58,28 @@ const Login = () => {
     try {
       // Normalizar o email: remover espaços e converter para minúsculas
       const normalizedEmail = emailForSignIn.trim().toLowerCase();
-      console.log('Login: Checking email:', normalizedEmail);
+      console.log('Login: Checking email (normalized):', normalizedEmail);
 
-      // Verificar se o email existe na tabela authorized_users
+      // Verificar se o email existe na tabela authorized_users usando ilike para case-insensitive
       const { data, error } = await supabase
         .from('authorized_users')
         .select('email')
-        .eq('email', normalizedEmail) // Usar o email normalizado na consulta
+        .ilike('email', normalizedEmail) // ALTERADO: Usando ilike para comparação case-insensitive
         .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found"
         console.error('Login: Erro ao verificar email em authorized_users:', error);
         showError('Ocorreu um erro ao verificar seu email. Tente novamente.');
         return;
       }
 
       if (!data) {
-        console.log('Login: Email not found in authorized_users:', normalizedEmail);
+        console.log('Login: Email not found in authorized_users (after ilike):', normalizedEmail);
         showError('Este email não está autorizado a acessar o aplicativo. Por favor, entre em contato com o suporte.');
         return;
       }
 
-      console.log('Login: Email found in authorized_users:', normalizedEmail);
+      console.log('Login: Email found in authorized_users (after ilike):', normalizedEmail);
       // Se o email está autorizado, prossegue para a tela de login
       setCurrentScreen('signIn');
     } catch (err) {

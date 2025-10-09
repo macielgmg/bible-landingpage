@@ -12,7 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { email, password, firstName, lastName } = await req.json();
+    const { email: rawEmail, password, firstName, lastName } = await req.json();
+    const email = rawEmail.trim().toLowerCase(); // Normaliza o email de entrada
 
     // Create a Supabase client with the service role key
     // This client bypasses Row Level Security and is used for admin operations
@@ -43,8 +44,8 @@ serve(async (req) => {
     const { data: authorizedUser, error: authError } = await supabaseAdmin
       .from('authorized_users')
       .select('email')
-      .eq('email', email)
-      .single();
+      .eq('email', email) // Usa o email normalizado aqui
+      .maybeSingle(); // ALTERADO: Usando maybeSingle para evitar erro se não encontrar
 
     if (authError && authError.code !== 'PGRST116') { // PGRST116 means "no rows found"
       console.error('Error checking authorized users:', authError);
@@ -64,7 +65,7 @@ serve(async (req) => {
     // If authorized, proceed with user creation using the service role key
     // email_confirm: true automatically confirms the email for whitelisted users
     const { data: user, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
-      email,
+      email, // Usa o email normalizado
       password,
       email_confirm: true, 
       user_metadata: {
