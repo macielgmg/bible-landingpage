@@ -7,19 +7,21 @@ import { Logo } from '@/components/Logo';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { SignUpForm } from '@/components/SignUpForm';
+// Removido: import { SignUpForm } from '@/components/SignUpForm';
 import { OnboardingLoading } from '@/components/OnboardingLoading';
 import { WelcomeScreen } from '@/components/WelcomeScreen';
 import { logUserActivity } from '@/utils/logging';
-import { Input } from '@/components/ui/input'; // Importar Input
-import { Label } from '@/components/ui/label'; // Importar Label
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { showError } from '@/utils/toast'; // Importar showError
 
 const Login = () => {
   const { session, loading } = useSession();
   const navigate = useNavigate();
   
-  const [currentScreen, setCurrentScreen] = useState<'emailInput' | 'signIn' | 'signUp' | 'forgotPassword' | 'onboardingLoading' | 'welcomeScreen'>('emailInput'); // Alterado o estado inicial
-  const [emailForSignIn, setEmailForSignIn] = useState(''); // Novo estado para o email
+  const [currentScreen, setCurrentScreen] = useState<'emailInput' | 'signIn' | 'forgotPassword' | 'onboardingLoading' | 'welcomeScreen'>('emailInput');
+  const [emailForSignIn, setEmailForSignIn] = useState('');
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false); // NOVO: Estado para verificar email
 
   // Efeito para logar o login do usuário
   useEffect(() => {
@@ -44,10 +46,6 @@ const Login = () => {
     return <Navigate to="/today" replace />;
   }
 
-  const handleSignUpSuccess = () => {
-    setCurrentScreen('onboardingLoading');
-  };
-
   const handleOnboardingLoadingComplete = () => {
     setCurrentScreen('welcomeScreen');
   };
@@ -56,13 +54,49 @@ const Login = () => {
     navigate('/onboarding-quiz');
   };
 
+  const handleContinueWithEmail = async () => {
+    if (!emailForSignIn) {
+      showError("Por favor, digite seu email.");
+      return;
+    }
+
+    setIsCheckingEmail(true);
+    try {
+      // Verificar se o email existe na tabela authorized_users
+      const { data, error } = await supabase
+        .from('authorized_users')
+        .select('email')
+        .eq('email', emailForSignIn)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found"
+        console.error('Erro ao verificar email em authorized_users:', error);
+        showError('Ocorreu um erro ao verificar seu email. Tente novamente.');
+        return;
+      }
+
+      if (!data) {
+        showError('Este email não está autorizado a acessar o aplicativo. Por favor, entre em contato com o suporte.');
+        return;
+      }
+
+      // Se o email está autorizado, prossegue para a tela de login
+      setCurrentScreen('signIn');
+    } catch (err) {
+      console.error('Erro inesperado ao verificar email:', err);
+      showError('Ocorreu um erro inesperado.');
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
+
   const renderAuthComponent = (view: 'sign_in' | 'forgotten_password', initialEmail?: string) => (
     <div className="w-full max-w-md rounded-lg bg-card p-8 shadow-lg relative animate-fade-in">
       <Button 
         variant="ghost" 
         size="icon" 
         className="absolute top-4 left-4 text-muted-foreground hover:text-primary"
-        onClick={() => setCurrentScreen('emailInput')} // Volta para a tela de input de email
+        onClick={() => setCurrentScreen('emailInput')}
       >
         <ArrowLeft className="h-5 w-5" />
       </Button>
@@ -74,9 +108,9 @@ const Login = () => {
           variables: {
             default: {
               colors: {
-                brand: 'hsl(120 10% 20%)', // NEW: Dark green-grey
-                brandAccent: 'hsl(120 10% 15%)', // NEW: Slightly darker
-                brandButtonText: 'hsl(120 20% 95%)', // NEW: Light green-grey
+                brand: 'hsl(120 10% 20%)',
+                brandAccent: 'hsl(120 10% 15%)',
+                brandButtonText: 'hsl(120 20% 95%)',
                 inputBackground: 'hsl(var(--input))',
                 inputBorder: 'hsl(var(--border))',
                 inputText: 'hsl(var(--foreground))',
@@ -90,7 +124,7 @@ const Login = () => {
         }}
         theme="light"
         view={view}
-        showLinks={false}
+        showLinks={false} // Mantido para esconder links de signup/forgot password internos do Auth
         localization={{
           variables: {
             sign_in: {
@@ -101,14 +135,7 @@ const Login = () => {
               password_input_placeholder: 'Sua senha',
               link_text: 'Esqueceu sua senha?',
             },
-            sign_up: { 
-              email_label: 'Email',
-              password_label: 'Criar Senha',
-              password_input_placeholder: 'Sua nova senha',
-              button_label: 'Criar Conta',
-              email_input_placeholder: 'Seu endereço de email',
-              link_text: 'Já tem uma conta? Entrar',
-            },
+            // Removido o bloco sign_up
             forgotten_password: {
               email_label: 'Email',
               password_label: 'Sua senha', 
@@ -118,7 +145,6 @@ const Login = () => {
             },
           },
         }}
-        // Passa o email inicial para o componente Auth
         email={initialEmail} 
       />
       {view === 'sign_in' && (
@@ -158,32 +184,16 @@ const Login = () => {
             />
           </div>
           <Button 
-            onClick={() => setCurrentScreen('signIn')} 
+            onClick={handleContinueWithEmail} 
             className="w-full py-6 text-lg animate-fade-in-up animation-delay-500"
-            disabled={!emailForSignIn}
+            disabled={!emailForSignIn || isCheckingEmail}
           >
-            Continuar com Email
+            {isCheckingEmail ? <Loader2 className="h-6 w-6 animate-spin" /> : "Continuar com Email"}
           </Button>
         </div>
       )}
 
       {currentScreen === 'signIn' && renderAuthComponent('sign_in', emailForSignIn)}
-      {currentScreen === 'signUp' && (
-        <div className="w-full max-w-md rounded-lg bg-card p-8 shadow-lg relative animate-fade-in">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="absolute top-4 left-4 text-muted-foreground hover:text-primary"
-            onClick={() => setCurrentScreen('emailInput')}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h2 className="text-2xl font-bold text-primary text-center mb-6 animate-fade-in-up animation-delay-100">Criar Nova Conta</h2>
-          <div className="animate-fade-in-up animation-delay-200">
-            <SignUpForm onSignUpSuccess={handleSignUpSuccess} />
-          </div>
-        </div>
-      )}
       {currentScreen === 'forgotPassword' && renderAuthComponent('forgotten_password', emailForSignIn)}
       {currentScreen === 'onboardingLoading' && (
         <OnboardingLoading onComplete={handleOnboardingLoadingComplete} />

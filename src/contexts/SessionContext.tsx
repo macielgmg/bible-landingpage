@@ -35,7 +35,8 @@ interface SessionContextType {
   setDeferredPWAInstallPrompt: (event: Event | null) => void;
   setIsPWAInstalled: (installed: boolean) => void;
   setShowPWAInstallPrompt: (show: boolean) => void;
-  passwordChanged: boolean; // NOVO: Adicionado status de mudança de senha
+  passwordChanged: boolean; // Adicionado status de mudança de senha
+  isAuthorized: boolean; // NOVO: Adicionado status de autorização
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -59,7 +60,8 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
   const [deferredPWAInstallPrompt, setDeferredPWAInstallPrompt] = useState<Event | null>(null);
   const [isPWAInstalled, setIsPWAInstalled] = useState(false);
   const [showPWAInstallPrompt, setShowPWAInstallPrompt] = useState(false);
-  const [passwordChanged, setPasswordChanged] = useState(true); // NOVO: Estado para passwordChanged, default true
+  const [passwordChanged, setPasswordChanged] = useState(true); // Estado para passwordChanged, default true
+  const [isAuthorized, setIsAuthorized] = useState(false); // NOVO: Estado para isAuthorized
 
   const fetchProfile = useCallback(async (user: User | null) => {
     if (!user) {
@@ -76,17 +78,44 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
       setTotalJournalEntries(0);
       setLatestUnseenAnnouncement(null);
       setPasswordChanged(true); // Resetar para true se não houver usuário
+      setIsAuthorized(false); // NOVO: Resetar isAuthorized
       return;
     }
 
     console.log('fetchProfile: Fetching profile for user ID:', user.id);
+    
+    // NOVO: 1. Verificar se o email do usuário está na tabela authorized_users
+    const { data: authUser, error: authUserError } = await supabase
+      .from('authorized_users')
+      .select('email')
+      .eq('email', user.email)
+      .maybeSingle();
+
+    if (authUserError && authUserError.code !== 'PGRST116') {
+      console.error('fetchProfile: Error checking authorized_users:', authUserError);
+      setIsAuthorized(false);
+      // Em caso de erro crítico ao verificar autorização, deslogar o usuário
+      await supabase.auth.signOut();
+      return;
+    }
+
+    if (!authUser) {
+      console.log('fetchProfile: User email not found in authorized_users. Signing out.');
+      setIsAuthorized(false);
+      await supabase.auth.signOut(); // Deslogar usuário não autorizado
+      return; // Parar o processamento do perfil para usuário não autorizado
+    } else {
+      console.log('fetchProfile: User email found in authorized_users.');
+      setIsAuthorized(true);
+    }
+
     let profileData = null;
     let profileError = null;
 
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('first_name,last_name,avatar_url,onboarding_completed,quiz_responses,preferences,daily_verse_notifications,study_reminders,achievement_notifications,enable_popups,total_shares,total_journal_entries,password_changed') // NOVO: Selecionando password_changed
+        .select('first_name,last_name,avatar_url,onboarding_completed,quiz_responses,preferences,daily_verse_notifications,study_reminders,achievement_notifications,enable_popups,total_shares,total_journal_entries,password_changed')
         .eq('id', user.id)
         .single();
       profileData = data;
@@ -111,7 +140,7 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
           enable_popups: true,
           total_shares: 0,
           total_journal_entries: 0,
-          password_changed: false, // NOVO: Definir como false no novo perfil
+          password_changed: false,
         })
         .select('*')
         .single();
@@ -139,7 +168,7 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
       setEnablePopups(profileData.enable_popups ?? true);
       setTotalShares(profileData.total_shares ?? 0);
       setTotalJournalEntries(profileData.total_journal_entries ?? 0);
-      setPasswordChanged(profileData.password_changed ?? true); // NOVO: Definir passwordChanged
+      setPasswordChanged(profileData.password_changed ?? true);
       console.log('fetchProfile: Set onboardingCompleted to:', profileData.onboarding_completed ?? false);
       console.log('fetchProfile: Set passwordChanged to:', profileData.password_changed ?? true);
     } else {
@@ -379,7 +408,8 @@ export const SessionProvider = ({ children }: { ReactNode }) => {
       setDeferredPWAInstallPrompt,
       setIsPWAInstalled,
       setShowPWAInstallPrompt,
-      passwordChanged, // NOVO: Adicionado passwordChanged ao contexto
+      passwordChanged,
+      isAuthorized, // NOVO: Adicionado isAuthorized ao contexto
     }}>
       {children}
     </SessionContext.Provider>
