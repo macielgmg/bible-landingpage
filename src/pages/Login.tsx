@@ -56,31 +56,34 @@ const Login = () => {
 
     setIsCheckingEmail(true);
     try {
-      // Normalizar o email: remover espaços e converter para minúsculas
       const normalizedEmail = emailForSignIn.trim().toLowerCase();
       console.log('Login: Checking email (normalized):', normalizedEmail);
 
-      // Verificar se o email existe na tabela authorized_users usando ilike para case-insensitive
+      // Adicionando log da consulta SQL para depuração
+      console.log(`Login: Executing query: SELECT email FROM authorized_users WHERE email ILIKE '${normalizedEmail}' LIMIT 1;`);
+
       const { data, error } = await supabase
         .from('authorized_users')
         .select('email')
-        .ilike('email', normalizedEmail) // ALTERADO: Usando ilike para comparação case-insensitive
-        .maybeSingle();
+        .ilike('email', normalizedEmail)
+        .limit(1); // ALTERADO: Usando limit(1) em vez de maybeSingle()
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 means "no rows found"
+      console.log('Login: Raw response from authorized_users query:', { data, error });
+
+      if (error && error.code !== 'PGRST116') {
         console.error('Login: Erro ao verificar email em authorized_users:', error);
         showError('Ocorreu um erro ao verificar seu email. Tente novamente.');
         return;
       }
 
-      if (!data) {
-        console.log('Login: Email not found in authorized_users (after ilike):', normalizedEmail);
+      // Verifica se algum dado foi retornado
+      if (!data || data.length === 0) { // ALTERADO: Verificando data.length
+        console.log('Login: Email not found in authorized_users (after ilike and limit 1):', normalizedEmail);
         showError('Este email não está autorizado a acessar o aplicativo. Por favor, entre em contato com o suporte.');
         return;
       }
 
-      console.log('Login: Email found in authorized_users (after ilike):', normalizedEmail);
-      // Se o email está autorizado, prossegue para a tela de login
+      console.log('Login: Email found in authorized_users (after ilike and limit 1):', normalizedEmail);
       setCurrentScreen('signIn');
     } catch (err) {
       console.error('Login: Erro inesperado ao verificar email:', err);
@@ -198,7 +201,7 @@ const Login = () => {
         <OnboardingLoading onComplete={handleOnboardingLoadingComplete} />
       )}
       {currentScreen === 'welcomeScreen' && (
-        <WelcomeScreen onContinue={handleWelcomeScreenContinue} />
+        <WelcomeScreen onComplete={handleWelcomeScreenContinue} />
       )}
     </div>
   );
