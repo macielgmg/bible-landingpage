@@ -11,12 +11,15 @@ import { SignUpForm } from '@/components/SignUpForm';
 import { OnboardingLoading } from '@/components/OnboardingLoading';
 import { WelcomeScreen } from '@/components/WelcomeScreen';
 import { logUserActivity } from '@/utils/logging';
+import { Input } from '@/components/ui/input'; // Importar Input
+import { Label } from '@/components/ui/label'; // Importar Label
 
 const Login = () => {
   const { session, loading } = useSession();
   const navigate = useNavigate();
   
-  const [currentScreen, setCurrentScreen] = useState<'choice' | 'signIn' | 'signUp' | 'forgotPassword' | 'onboardingLoading' | 'welcomeScreen'>('choice');
+  const [currentScreen, setCurrentScreen] = useState<'emailInput' | 'signIn' | 'signUp' | 'forgotPassword' | 'onboardingLoading' | 'welcomeScreen'>('emailInput'); // Alterado o estado inicial
+  const [emailForSignIn, setEmailForSignIn] = useState(''); // Novo estado para o email
 
   // Efeito para logar o login do usuário
   useEffect(() => {
@@ -53,13 +56,13 @@ const Login = () => {
     navigate('/onboarding-quiz');
   };
 
-  const renderAuthComponent = (view: 'sign_in' | 'forgotten_password') => (
+  const renderAuthComponent = (view: 'sign_in' | 'forgotten_password', initialEmail?: string) => (
     <div className="w-full max-w-md rounded-lg bg-card p-8 shadow-lg relative animate-fade-in">
       <Button 
         variant="ghost" 
         size="icon" 
         className="absolute top-4 left-4 text-muted-foreground hover:text-primary"
-        onClick={() => setCurrentScreen('choice')}
+        onClick={() => setCurrentScreen('emailInput')} // Volta para a tela de input de email
       >
         <ArrowLeft className="h-5 w-5" />
       </Button>
@@ -115,6 +118,8 @@ const Login = () => {
             },
           },
         }}
+        // Passa o email inicial para o componente Auth
+        email={initialEmail} 
       />
       {view === 'sign_in' && (
         <Button 
@@ -135,36 +140,41 @@ const Login = () => {
         <p className="mt-2 text-muted-foreground">Aprofunde-se na Palavra de Deus.</p>
       </div>
 
-      {currentScreen === 'choice' && (
+      {currentScreen === 'emailInput' && (
         <div className="w-full max-w-md rounded-lg bg-card p-8 shadow-lg flex flex-col items-center space-y-4 animate-fade-in">
           <h2 className="text-2xl font-bold text-primary animate-fade-in-up animation-delay-200">Bem-vindo ao Raízes da Fé</h2>
           <p className="text-muted-foreground text-center mb-4 animate-fade-in-up animation-delay-300">
-            Entre com seu email e senha ou crie uma nova conta.
+            Para continuar, digite seu email.
           </p>
+          <div className="w-full space-y-2 animate-fade-in-up animation-delay-400">
+            <Label htmlFor="email-input">Email</Label>
+            <Input
+              id="email-input"
+              type="email"
+              placeholder="Seu endereço de email"
+              value={emailForSignIn}
+              onChange={(e) => setEmailForSignIn(e.target.value)}
+              className="w-full"
+            />
+          </div>
           <Button 
             onClick={() => setCurrentScreen('signIn')} 
-            className="w-full py-6 text-lg animate-fade-in-up animation-delay-400"
+            className="w-full py-6 text-lg animate-fade-in-up animation-delay-500"
+            disabled={!emailForSignIn}
           >
-            Entrar na conta existente
-          </Button>
-          <Button 
-            onClick={() => setCurrentScreen('signUp')} 
-            variant="outline" 
-            className="w-full py-6 text-lg border-primary text-primary hover:bg-primary/10 animate-fade-in-up animation-delay-500"
-          >
-            É a minha primeira vez acessando
+            Continuar com Email
           </Button>
         </div>
       )}
 
-      {currentScreen === 'signIn' && renderAuthComponent('sign_in')}
+      {currentScreen === 'signIn' && renderAuthComponent('sign_in', emailForSignIn)}
       {currentScreen === 'signUp' && (
         <div className="w-full max-w-md rounded-lg bg-card p-8 shadow-lg relative animate-fade-in">
           <Button 
             variant="ghost" 
             size="icon" 
             className="absolute top-4 left-4 text-muted-foreground hover:text-primary"
-            onClick={() => setCurrentScreen('choice')}
+            onClick={() => setCurrentScreen('emailInput')}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -174,7 +184,7 @@ const Login = () => {
           </div>
         </div>
       )}
-      {currentScreen === 'forgotPassword' && renderAuthComponent('forgotten_password')}
+      {currentScreen === 'forgotPassword' && renderAuthComponent('forgotten_password', emailForSignIn)}
       {currentScreen === 'onboardingLoading' && (
         <OnboardingLoading onComplete={handleOnboardingLoadingComplete} />
       )}
