@@ -26,7 +26,7 @@
         fbq('init', '1931315447650555');
         fbq('track', 'PageView');
     </script>
-    <noscript><img height="1" width="1" style="display:none"
+    <noscript><img loading="lazy" decoding="async" height="1" width="1" style="display:none"
             src="https://www.facebook.com/tr?id=1931315447650555&ev=PageView&noscript=1" /></noscript>
     <!-- End Meta Pixel Code -->
 
@@ -48,35 +48,52 @@
         }
 
         .full-width-image {
-            background-image: url('images/hero-background.png');
+            background-image: url('images/hero-background.webp');
             background-size: contain;
             /* Ajustado para não cortar a imagem */
             background-position: center;
             background-repeat: no-repeat;
             /* Garante que a imagem não se repita */
-            height: 60vh;
+            width: 100%;
+            aspect-ratio: 1400 / 788;
+            max-height: 60vh;
         }
 
-        /* Animação do carrossel horizontal */
+        /* Carrossel horizontal: auto-scroll contínuo + arrasto manual */
         .scrolling-wrapper {
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
             width: 100%;
+            cursor: grab;
+            scroll-behavior: auto;
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE/Edge */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrolling-wrapper::-webkit-scrollbar {
+            display: none;
+            /* Chrome/Safari */
+        }
+
+        .scrolling-wrapper.is-dragging {
+            cursor: grabbing;
         }
 
         .scrolling-content {
-            display: inline-block;
-            white-space: nowrap;
-            animation: scroll 20s linear infinite;
+            display: flex;
+            flex-wrap: nowrap;
+            width: max-content;
+            user-select: none;
         }
 
-        @keyframes scroll {
-            0% {
-                transform: translateX(0);
-            }
-
-            100% {
-                transform: translateX(-50%);
-            }
+        .scrolling-content img {
+            flex: 0 0 auto;
+            -webkit-user-drag: none;
+            user-select: none;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -87,12 +104,12 @@
     <!-- SEÇÃO 1: HERO -->
     <section class="dark-section text-white flex flex-col">
         <div class="container mx-auto px-6 py-4 flex justify-center">
-            <img src="images/logo.png" alt="Logo Raízes da Fé" class="h-12">
+            <img loading="eager" fetchpriority="high" decoding="async" src="images/logo.webp" alt="Logo Raízes da Fé" class="h-12">
         </div>
         <div class="flex flex-col justify-center items-center text-center px-6 py-12 md:py-20">
             <h1 class="text-3xl md:text-4xl font-bold leading-tight max-w-4xl">Com o aplicativo Raízes da Fé, você
                 finalmente transformará a complexidade da Bíblia em clareza para a sua vida diária.</h1>
-            <img src="images/main-page-books.png" alt="Apresentação do App Raízes da Fé"
+            <img loading="eager" fetchpriority="high" decoding="async" src="images/main-page-books.webp" alt="Apresentação do App Raízes da Fé"
                 class="mt-8 max-w-full h-auto md:max-w-3xl rounded-lg">
             <p class="mt-8 text-lg max-w-3xl text-gray-300">Uma experiência de estudo bíblico guiada e personalizada,
                 diretamente no seu celular, para fortalecer sua fé todos os dias.</p>
@@ -107,7 +124,7 @@
             <p class="text-lg text-gray-600 mt-4 max-w-3xl mx-auto">Uma jornada guiada, versículo por versículo, para
                 iluminar seu entendimento.</p>
             <div class="flex justify-center items-center mt-12">
-                <img src="images/3-images.png" alt="Demonstração do App" class="rounded-lg max-w-full md:max-w-xl">
+                <img loading="lazy" decoding="async" src="images/3-images.webp" alt="Demonstração do App" class="rounded-lg max-w-full md:max-w-xl">
             </div>
         </div>
     </section>
@@ -123,7 +140,7 @@
             </p>
             <h3 class="text-2xl md:text-3xl font-bold mt-12">Porque, neste exato momento, a sua sede espiritual merece
                 ser saciada com entendimento.</h3>
-            <img src="images/pessoa-estudando.png" alt="Pessoa estudando a Bíblia"
+            <img loading="lazy" decoding="async" src="images/pessoa-estudando.webp" alt="Pessoa estudando a Bíblia"
                 class="mt-8 mx-auto rounded-lg max-w-full md:max-w-2xl">
             <p class="mt-8 text-lg text-gray-600">A falta de um método simples e eficaz é o que impede milhares de
                 pessoas de experimentarem o poder transformador da Palavra em sua plenitude. Você lê, mas a mensagem
@@ -196,17 +213,17 @@
         <h2 class="text-3xl md:text-4xl font-bold">Mas agora, temos uma solução.</h2>
         <div class="mt-12 px-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
-                <img src="images/depoimento-1.jpg" alt="Depoimento de usuário 1"
+                <img loading="lazy" decoding="async" src="images/depoimento-1.webp" alt="Depoimento de usuário 1"
                     class="rounded-lg shadow-lg w-full">
-                <img src="images/depoimento-2.jpg" alt="Depoimento de usuário 2"
+                <img loading="lazy" decoding="async" src="images/depoimento-2.webp" alt="Depoimento de usuário 2"
                     class="rounded-lg shadow-lg w-full">
-                <img src="images/depoimento-3.jpg" alt="Depoimento de usuário 3"
+                <img loading="lazy" decoding="async" src="images/depoimento-3.webp" alt="Depoimento de usuário 3"
                     class="rounded-lg shadow-lg w-full">
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 max-w-3xl mx-auto">
-                <img src="images/depoimento-4.jpg" alt="Depoimento de usuário 4"
+                <img loading="lazy" decoding="async" src="images/depoimento-4.webp" alt="Depoimento de usuário 4"
                     class="rounded-lg shadow-lg w-full">
-                <img src="images/depoimento-5.jpg" alt="Depoimento de usuário 5"
+                <img loading="lazy" decoding="async" src="images/depoimento-5.webp" alt="Depoimento de usuário 5"
                     class="rounded-lg shadow-lg w-full">
             </div>
         </div>
@@ -214,10 +231,10 @@
 
     <!-- SEÇÃO 6: APRESENTAÇÃO DO APP -->
     <section class="bg-white pt-16 md:pt-24 pb-0 text-center">
-        <img src="images/logo.png" alt="Logo Raízes da Fé" class="mx-auto h-16">
+        <img loading="lazy" decoding="async" src="images/logo.webp" alt="Logo Raízes da Fé" class="mx-auto h-16">
         <p class="mt-4 text-xl md:text-2xl max-w-3xl mx-auto">Um aplicativo para estudo guiado da Bíblia, que te
             acompanha passo a passo, transformando sua devoção em uma experiência viva e diária.</p>
-        <div class="full-width-image mt-12"></div>
+        <div class="full-width-image mt-20"></div>
     </section>
 
     <!-- SEÇÃO 7: BENEFÍCIOS "CHEGA DE..." -->
@@ -281,63 +298,63 @@
             <div class="scrolling-wrapper rounded-lg">
                 <div class="scrolling-content">
                     <!-- Primeiro Bloco de Imagens -->
-                    <img src="images/carrossel-01.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-01.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-02.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-02.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-03.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-03.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-04.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-04.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-05.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-05.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-06.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-06.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-07.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-07.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-08.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-08.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-09.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-09.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-10.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-10.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-11.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-11.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-12.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-12.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-13.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-13.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-14.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-14.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
 
                     <!-- Segundo Bloco de Imagens para Loop Contínuo -->
-                    <img src="images/carrossel-01.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-01.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-02.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-02.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-03.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-03.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-04.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-04.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-05.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-05.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-06.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-06.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-07.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-07.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-08.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-08.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-09.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-09.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-10.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-10.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto inline-block pr-8">
-                    <img src="images/carrossel-11.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-11.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto	inline-block pr-8">
-                    <img src="images/carrossel-12.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-12.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto	inline-block pr-8">
-                    <img src="images/carrossel-13.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-13.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto	inline-block pr-8">
-                    <img src="images/carrossel-14.png" alt="Estudo Bíblico"
+                    <img loading="lazy" decoding="async" src="images/carrossel-14.webp" alt="Estudo Bíblico"
                         class="h-64 sm:h-80 w-auto	inline-block pr-8">
 
                 </div>
@@ -359,26 +376,26 @@
                     <!-- Passo 1 -->
                     <div class="bg-gray-800 p-6 rounded-lg text-center">
                         <h5 class="font-bold text-xl mb-4 text-yellow-400">1. Acesso Imediato</h5>
-                        <img src="images/passo-1-acesso.png" alt="Ícone de Email" class="mx-auto rounded-lg">
+                        <img loading="lazy" decoding="async" src="images/passo-1-acesso.webp" alt="Ícone de Email" class="mx-auto rounded-lg">
                         <p class="mt-4 text-gray-300">Após a compra, você recebe seu acesso por e-mail.</p>
                     </div>
                     <!-- Passo 2 -->
                     <div class="bg-gray-800 p-6 rounded-lg text-center">
                         <h5 class="font-bold text-xl mb-4 text-yellow-400">2. Personalize seu Perfil</h5>
-                        <img src="images/passo-2-perfil.png" alt="Ícone de Interesses" class="mx-auto rounded-lg">
+                        <img loading="lazy" decoding="async" src="images/passo-2-perfil.webp" alt="Ícone de Interesses" class="mx-auto rounded-lg">
                         <p class="mt-4 text-gray-300">Personalize seu perfil com seus interesses e assuntos.</p>
                     </div>
                     <!-- Passo 3 -->
                     <div class="bg-gray-800 p-6 rounded-lg text-center">
                         <h5 class="font-bold text-xl mb-4 text-yellow-400">3. Defina seus Objetivos</h5>
-                        <img src="images/passo-3-objetivos.png" alt="Ícone de Objetivos" class="mx-auto rounded-lg">
+                        <img loading="lazy" decoding="async" src="images/passo-3-objetivos.webp" alt="Ícone de Objetivos" class="mx-auto rounded-lg">
                         <p class="mt-4 text-gray-300">Defina suas maiores dificuldades e como gostaria de alcançar seus
                             objetivos.</p>
                     </div>
                     <!-- Passo 4 -->
                     <div class="bg-gray-800 p-6 rounded-lg text-center">
                         <h5 class="font-bold text-xl mb-4 text-yellow-400">4. Pronto!</h5>
-                        <img src="images/passo-4-pronto.png" alt="Ícone de Jornada Iniciada"
+                        <img loading="lazy" decoding="async" src="images/passo-4-pronto.webp" alt="Ícone de Jornada Iniciada"
                             class="mx-auto rounded-lg">
                         <p class="mt-4 text-gray-300">Em instantes, sua jornada personalizada começa, permitindo que
                             você estude, compreenda a Palavra e aprofunde sua conexão com Deus de uma forma única.</p>
@@ -401,7 +418,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Eficácia 1 -->
                 <div class="bg-gray-50 p-6 rounded-lg">
-                    <img src="images/eficacia-1-metodo.png" alt="Método Guiado"
+                    <img loading="lazy" decoding="async" src="images/eficacia-1-metodo.webp" alt="Método Guiado"
                         class="mx-auto mb-6 rounded-lg max-w-[14rem]">
                     <h3 class="text-xl font-bold bg-yellow-400 text-gray-900 py-2 px-4 rounded-md inline-block">1)
                         Método de Estudo Guiado</h3>
@@ -411,7 +428,7 @@
                 </div>
                 <!-- Eficácia 2 -->
                 <div class="bg-gray-50 p-6 rounded-lg">
-                    <img src="images/eficacia-2-personalizacao.png" alt="Personalização Inteligente"
+                    <img loading="lazy" decoding="async" src="images/eficacia-2-personalizacao.webp" alt="Personalização Inteligente"
                         class="mx-auto mb-6 rounded-lg max-w-[14rem]">
                     <h3 class="text-xl font-bold bg-yellow-400 text-gray-900 py-2 px-4 rounded-md inline-block">2)
                         Personalização Inteligente</h3>
@@ -421,7 +438,7 @@
                 </div>
                 <!-- Eficácia 3 -->
                 <div class="bg-gray-50 p-6 rounded-lg">
-                    <img src="images/eficacia-3-acompanhamento.png" alt="Acompanhamento e Progresso"
+                    <img loading="lazy" decoding="async" src="images/eficacia-3-acompanhamento.webp" alt="Acompanhamento e Progresso"
                         class="mx-auto mb-6 rounded-lg max-w-[14rem]">
                     <h3 class="text-xl font-bold bg-yellow-400 text-gray-900 py-2 px-4 rounded-md inline-block">3)
                         Acompanhamento</h3>
@@ -431,7 +448,7 @@
                 </div>
                 <!-- Eficácia 4 -->
                 <div class="bg-gray-50 p-6 rounded-lg">
-                    <img src="images/eficacia-4-multissensorial.png" alt="Experiência Multissensorial"
+                    <img loading="lazy" decoding="async" src="images/eficacia-4-multissensorial.webp" alt="Experiência Multissensorial"
                         class="mx-auto mb-6 rounded-lg max-w-[14rem]">
                     <h3 class="text-xl font-bold bg-yellow-400 text-gray-900 py-2 px-4 rounded-md inline-block">4)
                         Experiência Multissensorial</h3>
@@ -452,7 +469,7 @@
             <div class="mt-12 space-y-12 max-w-3xl mx-auto">
                 <!-- Recurso 1: Áudio -->
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <img src="images/recurso-audio.png" alt="Bíblia em Áudio" class="mx-auto rounded-lg mb-6">
+                    <img loading="lazy" decoding="async" src="images/recurso-audio.webp" alt="Bíblia em Áudio" class="mx-auto rounded-lg mb-6">
                     <div class="flex items-center space-x-3">
                         <div class="bg-green-100 text-green-700 p-2 rounded-full"><svg
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -469,7 +486,7 @@
                 </div>
                 <!-- Recurso 2: Estudos -->
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <img src="images/recurso-estudos.png" alt="Estudos Profundos" class="mx-auto rounded-lg mb-6">
+                    <img loading="lazy" decoding="async" src="images/recurso-estudos.webp" alt="Estudos Profundos" class="mx-auto rounded-lg mb-6">
                     <div class="flex items-center space-x-3">
                         <div class="bg-green-100 text-green-700 p-2 rounded-full"><svg
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -487,7 +504,7 @@
                 </div>
                 <!-- Recurso 3: Reflexões -->
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <img src="images/recurso-reflexoes.png" alt="Reflexões Personalizadas"
+                    <img loading="lazy" decoding="async" src="images/recurso-reflexoes.webp" alt="Reflexões Personalizadas"
                         class="mx-auto rounded-lg mb-6">
                     <div class="flex items-center space-x-3">
                         <div class="bg-green-100 text-green-700 p-2 rounded-full"><svg
@@ -504,7 +521,7 @@
                 </div>
                 <!-- Recurso 4: Compartilhamento -->
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <img src="images/recurso-compartilhamento.png" alt="Compartilhe a Palavra" class="mx-auto rounded-lg mb-6">
+                    <img loading="lazy" decoding="async" src="images/recurso-compartilhamento.webp" alt="Compartilhe a Palavra" class="mx-auto rounded-lg mb-6">
                     <div class="flex items-center space-x-3">
                         <div class="bg-green-100 text-green-700 p-2 rounded-full"><svg
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -523,7 +540,7 @@
                 </div>
                 <!-- Recurso 5: Chat Bíblico -->
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <img src="images/recurso-chat.png" alt="Chat Bíblico" class="mx-auto rounded-lg mb-6">
+                    <img loading="lazy" decoding="async" src="images/recurso-chat.webp" alt="Chat Bíblico" class="mx-auto rounded-lg mb-6">
                     <div class="flex items-center space-x-3">
                         <div class="bg-green-100 text-green-700 p-2 rounded-full"><svg
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -593,7 +610,7 @@
                     profunda e 
                     prática
                     </p>
-                <img src="images/oferta.png" alt="Oferta Raízes da Fé Anual" class="mx-auto my-8 rounded-lg">
+                <img loading="lazy" decoding="async" src="images/oferta.webp" alt="Oferta Raízes da Fé Anual" class="mx-auto my-8 rounded-lg">
                 <p class="text-2xl text-gray-500">De <del>R$ 99,90</del> por apenas:</p>
                 <p class="text-5xl md:text-7xl font-extrabold my-2 text-green-600">R$ 23,90<span
                         class="text-xl md:text-2xl font-bold text-gray-600"></span></p>
@@ -656,7 +673,7 @@
 
             <div class="max-w-4xl mx-auto">
                 <div class="mt-8">
-                    <img src="images/selo-garantia.png"
+                    <img loading="lazy" decoding="async" src="images/selo-garantia.webp"
                         alt="Selo de Garantia de 7 dias" class="mx-auto h-32">
                     <p class="mt-4 max-w-md mx-auto text-gray-600">Sua satisfação ou seu dinheiro de volta. O
                         compromisso com a sua transformação é nosso. Você não tem nada a perder.</p>
@@ -678,7 +695,7 @@
     <section class="dark-section text-white py-16 md:py-24">
         <div class="container mx-auto px-6 max-w-4xl text-center">
             <h2 class="text-3xl md:text-4xl font-bold mb-8">Quem Somos</h2>
-            <img src="images/logo.png" alt="Logo Raízes da Fé" class="mx-auto mb-6 h-16">
+            <img loading="lazy" decoding="async" src="images/logo.webp" alt="Logo Raízes da Fé" class="mx-auto mb-6 h-16">
             <p class="text-lg text-gray-300 leading-relaxed">O Raízes da Fé nasceu de um propósito: tornar a Palavra de
                 Deus acessível e compreensível para todos. Somos uma equipe de teólogos, desenvolvedores e designers
                 apaixonados por Jesus e dedicados a criar ferramentas que fortaleçam a sua fé. Acreditamos que a
@@ -763,7 +780,7 @@
     <!-- SEÇÃO 19: FOOTER -->
     <footer class="dark-section text-gray-400 py-12">
         <div class="container mx-auto px-6 text-center">
-            <img src="images/logo.png" alt="Logo Raízes da Fé" class="mx-auto mb-4 h-12">
+            <img loading="lazy" decoding="async" src="images/logo.webp" alt="Logo Raízes da Fé" class="mx-auto mb-4 h-12">
             <p>CNPJ: 61.900.725/0001-20</p>
             <p class="text-sm mt-4">&copy; 2025 raizesdafe.site - Todos os direitos reservados.</p>
             <p class="text-xs mt-6 max-w-3xl mx-auto">Este site não é afiliado ao Facebook, Instagram, Google ou
@@ -773,6 +790,102 @@
                 específico.</p>
         </div>
     </footer>
+
+    <script>
+        (function () {
+            const wrapper = document.querySelector('.scrolling-wrapper');
+            const content = wrapper && wrapper.querySelector('.scrolling-content');
+            if (!wrapper || !content) return;
+
+            const RESUME_DELAY = 1000; // ms parado até voltar a se mover sozinho
+            const LOOP_SECONDS = 30;   // quanto maior, mais lento o deslize automático
+
+            let half = 0;              // largura exata de um bloco (conteúdo é duplicado)
+            let speed = 0;             // pixels por segundo
+            let lastInteraction = -RESUME_DELAY;
+            let lastFrame = 0;
+            let dragging = false;
+            let lastX = 0;
+
+            function measure() {
+                // Mede a largura exata do primeiro bloco usando a posição da
+                // primeira imagem do bloco duplicado (evita pulos de sub-pixel).
+                const imgs = content.children;
+                const mid = Math.floor(imgs.length / 2);
+                if (imgs.length >= 2 && imgs[mid]) {
+                    half = imgs[mid].offsetLeft - imgs[0].offsetLeft;
+                } else {
+                    half = content.scrollWidth / 2;
+                }
+                speed = half > 0 ? half / LOOP_SECONDS : 0;
+            }
+
+            function loop() {
+                if (half <= 0) return;
+                while (wrapper.scrollLeft >= half) wrapper.scrollLeft -= half;
+                while (wrapper.scrollLeft < 0) wrapper.scrollLeft += half;
+            }
+
+            function markInteraction() {
+                lastInteraction = performance.now();
+            }
+
+            function tick(now) {
+                if (!half) measure();
+                if (!lastFrame) lastFrame = now;
+                const dt = Math.min((now - lastFrame) / 1000, 0.05);
+                lastFrame = now;
+
+                const idle = now - lastInteraction >= RESUME_DELAY;
+                if (idle && !dragging && speed > 0) {
+                    wrapper.scrollLeft += speed * dt;
+                }
+                loop();
+                requestAnimationFrame(tick);
+            }
+
+            // Arrasto com mouse (incremental, para acompanhar o loop sem travar no fim)
+            wrapper.addEventListener('pointerdown', function (e) {
+                markInteraction();
+                if (e.pointerType !== 'mouse') return;
+                dragging = true;
+                lastX = e.clientX;
+                wrapper.classList.add('is-dragging');
+                try { wrapper.setPointerCapture(e.pointerId); } catch (_) { }
+            });
+            wrapper.addEventListener('pointermove', function (e) {
+                if (!dragging) return;
+                wrapper.scrollLeft -= (e.clientX - lastX);
+                lastX = e.clientX;
+                loop();
+                markInteraction();
+            });
+            function endDrag(e) {
+                if (!dragging) return;
+                dragging = false;
+                wrapper.classList.remove('is-dragging');
+                try { wrapper.releasePointerCapture(e.pointerId); } catch (_) { }
+                markInteraction();
+            }
+            wrapper.addEventListener('pointerup', endDrag);
+            wrapper.addEventListener('pointercancel', endDrag);
+            wrapper.addEventListener('pointerleave', endDrag);
+
+            // Toque (mobile): rolagem nativa conta como interação
+            wrapper.addEventListener('touchstart', markInteraction, { passive: true });
+            wrapper.addEventListener('touchmove', markInteraction, { passive: true });
+
+            // Trackpad/scroll horizontal conta como interação
+            wrapper.addEventListener('wheel', function (e) {
+                if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) markInteraction();
+            }, { passive: true });
+
+            window.addEventListener('resize', measure);
+            window.addEventListener('load', measure);
+            measure();
+            requestAnimationFrame(tick);
+        })();
+    </script>
 
 </body>
 
