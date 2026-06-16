@@ -95,6 +95,25 @@
             user-select: none;
             pointer-events: none;
         }
+
+        /* CTA flutuante fixo */
+        .floating-cta {
+            position: fixed;
+            left: 50%;
+            bottom: 1.25rem;
+            transform: translateX(-50%) translateY(0);
+            z-index: 50;
+            width: calc(100% - 2rem);
+            max-width: 30rem;
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s ease;
+        }
+
+        .floating-cta.is-hidden {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-50%) translateY(140%);
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -790,6 +809,64 @@
                 específico.</p>
         </div>
     </footer>
+
+    <!-- CTA FLUTUANTE FIXO -->
+    <div id="floating-cta" class="floating-cta">
+        <button type="button" data-scroll-to="#oferta"
+            class="w-full bg-white/95 backdrop-blur-md shadow-2xl ring-1 ring-black/5 rounded-2xl p-4 flex items-center gap-4 hover:shadow-green-200 hover:-translate-y-0.5 transition cursor-pointer">
+            <div class="text-left flex-1 min-w-0">
+                <p class="text-xs text-gray-500 leading-tight">Acesso Vitalício por apenas</p>
+                <p class="text-2xl font-extrabold text-green-600 leading-tight">R$ 23,90</p>
+            </div>
+            <span
+                class="bg-green-600 text-white font-extrabold py-3 px-5 rounded-xl text-base sm:text-lg whitespace-nowrap flex items-center gap-2">
+                Quero agora
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <script>
+        (function () {
+            const floating = document.getElementById('floating-cta');
+            const oferta = document.getElementById('oferta');
+            if (!floating || !oferta) return;
+
+            const button = floating.querySelector('[data-scroll-to]');
+            if (button) {
+                button.addEventListener('click', function () {
+                    const target = document.querySelector(button.dataset.scrollTo);
+                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            }
+
+            let viewContentSent = false;
+
+            // Esconde o flutuante enquanto a seção de oferta estiver visível
+            const observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    floating.classList.toggle('is-hidden', entry.isIntersecting);
+
+                    // Dispara o ViewContent uma única vez ao ver a oferta
+                    if (entry.isIntersecting && !viewContentSent && typeof fbq === 'function') {
+                        fbq('track', 'ViewContent', {
+                            content_name: 'Oferta Acesso Vitalício - Raízes da Fé',
+                            content_category: 'Oferta',
+                            value: 23.90,
+                            currency: 'BRL'
+                        });
+                        viewContentSent = true;
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            observer.observe(oferta);
+        })();
+    </script>
 
     <script>
         (function () {
