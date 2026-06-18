@@ -59,23 +59,16 @@
             max-height: 60vh;
         }
 
-        /* Carrossel horizontal: auto-scroll contínuo + arrasto manual */
+        /* Carrossel horizontal: auto-scroll via transform + arrasto manual.
+           Usa transform (não scrollLeft) para evitar conflito com o
+           momentum scrolling nativo do mobile, que causava travamentos. */
         .scrolling-wrapper {
-            overflow-x: auto;
-            overflow-y: hidden;
+            overflow: hidden;
             width: 100%;
             cursor: grab;
-            scroll-behavior: auto;
-            scrollbar-width: none;
-            /* Firefox */
-            -ms-overflow-style: none;
-            /* IE/Edge */
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .scrolling-wrapper::-webkit-scrollbar {
-            display: none;
-            /* Chrome/Safari */
+            /* Permite rolar a página na vertical; gestos horizontais
+               são tratados pelo arrasto do carrossel. */
+            touch-action: pan-y;
         }
 
         .scrolling-wrapper.is-dragging {
@@ -87,6 +80,7 @@
             flex-wrap: nowrap;
             width: max-content;
             user-select: none;
+            will-change: transform;
         }
 
         .scrolling-content img {
@@ -836,13 +830,54 @@
             const oferta = document.getElementById('oferta');
             if (!floating || !oferta) return;
 
-            const button = floating.querySelector('[data-scroll-to]');
-            if (button) {
-                button.addEventListener('click', function () {
-                    const target = document.querySelector(button.dataset.scrollTo);
-                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Força o carregamento imediato das imagens "lazy" acima da
+            // oferta. Sem isso, elas carregam durante a rolagem e empurram a
+            // seção para baixo, fazendo o scroll parar no lugar errado (bug no mobile).
+            function eagerLoadAbove(target) {
+                const limit = target.getBoundingClientRect().top + window.pageYOffset;
+                document.querySelectorAll('img[loading="lazy"]').forEach(function (img) {
+                    const imgTop = img.getBoundingClientRect().top + window.pageYOffset;
+                    if (imgTop < limit) {
+                        img.loading = 'eager';
+                        img.decoding = 'sync';
+                    }
                 });
             }
+
+            // Rola até a oferta e reajusta a posição enquanto o layout ainda
+            // muda (imagens terminando de carregar), corrigindo o deslocamento.
+            function scrollToOferta() {
+                eagerLoadAbove(oferta);
+                oferta.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                let lastHeight = document.documentElement.scrollHeight;
+                let checks = 0;
+                let cancelled = false;
+                const cancel = function () { cancelled = true; };
+                window.addEventListener('wheel', cancel, { passive: true });
+                window.addEventListener('touchmove', cancel, { passive: true });
+
+                const timer = setInterval(function () {
+                    const height = document.documentElement.scrollHeight;
+                    if (!cancelled && height !== lastHeight) {
+                        lastHeight = height;
+                        oferta.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    if (cancelled || ++checks >= 25) {
+                        clearInterval(timer);
+                        window.removeEventListener('wheel', cancel);
+                        window.removeEventListener('touchmove', cancel);
+                    }
+                }, 100);
+            }
+
+            // Aplica a um único handler em todos os CTAs que levam à oferta.
+            document.querySelectorAll('a[href="#oferta"], [data-scroll-to="#oferta"]').forEach(function (el) {
+                el.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    scrollToOferta();
+                });
+            });
 
             let viewContentSent = false;
 
@@ -876,12 +911,17 @@
 
             const RESUME_DELAY = 1000; // ms parado até voltar a se mover sozinho
             const LOOP_SECONDS = 30;   // quanto maior, mais lento o deslize automático
+            const DRAG_THRESHOLD = 6;  // px de movimento horizontal para assumir o arrasto
 
             let half = 0;              // largura exata de um bloco (conteúdo é duplicado)
             let speed = 0;             // pixels por segundo
+            let offset = 0;            // deslocamento atual aplicado via transform
             let lastInteraction = -RESUME_DELAY;
             let lastFrame = 0;
             let dragging = false;
+            let activePointer = null;
+            let startX = 0;
+            let startY = 0;
             let lastX = 0;
 
             function measure() {
@@ -897,10 +937,14 @@
                 speed = half > 0 ? half / LOOP_SECONDS : 0;
             }
 
-            function loop() {
+            function normalize() {
                 if (half <= 0) return;
-                while (wrapper.scrollLeft >= half) wrapper.scrollLeft -= half;
-                while (wrapper.scrollLeft < 0) wrapper.scrollLeft += half;
+                offset %= half;
+                if (offset < 0) offset += half;
+            }
+
+            function apply() {
+                content.style.transform = 'translate3d(' + (-offset) + 'px, 0, 0)';
             }
 
             function markInteraction() {
@@ -915,51 +959,62 @@
 
                 const idle = now - lastInteraction >= RESUME_DELAY;
                 if (idle && !dragging && speed > 0) {
-                    wrapper.scrollLeft += speed * dt;
+                    offset += speed * dt;
                 }
-                loop();
+                normalize();
+                apply();
                 requestAnimationFrame(tick);
             }
 
-            // Arrasto com mouse (incremental, para acompanhar o loop sem travar no fim)
+            // Arrasto unificado (mouse + toque) via Pointer Events.
+            // Não usamos setPointerCapture para que o navegador ainda
+            // possa rolar a página verticalmente (touch-action: pan-y).
             wrapper.addEventListener('pointerdown', function (e) {
-                markInteraction();
-                if (e.pointerType !== 'mouse') return;
                 dragging = true;
-                lastX = e.clientX;
+                activePointer = e.pointerId;
+                startX = lastX = e.clientX;
+                startY = e.clientY;
                 wrapper.classList.add('is-dragging');
-                try { wrapper.setPointerCapture(e.pointerId); } catch (_) { }
+                markInteraction();
             });
             wrapper.addEventListener('pointermove', function (e) {
-                if (!dragging) return;
-                wrapper.scrollLeft -= (e.clientX - lastX);
+                if (!dragging || e.pointerId !== activePointer) return;
+                // Se o gesto for predominantemente vertical, deixa a página rolar.
+                if (Math.abs(e.clientY - startY) > Math.abs(e.clientX - startX) &&
+                    Math.abs(e.clientY - startY) > DRAG_THRESHOLD) {
+                    return;
+                }
+                offset -= (e.clientX - lastX);
                 lastX = e.clientX;
-                loop();
+                normalize();
+                apply();
                 markInteraction();
             });
             function endDrag(e) {
-                if (!dragging) return;
+                if (!dragging || (e && activePointer !== null && e.pointerId !== activePointer)) return;
                 dragging = false;
+                activePointer = null;
                 wrapper.classList.remove('is-dragging');
-                try { wrapper.releasePointerCapture(e.pointerId); } catch (_) { }
                 markInteraction();
             }
             wrapper.addEventListener('pointerup', endDrag);
             wrapper.addEventListener('pointercancel', endDrag);
             wrapper.addEventListener('pointerleave', endDrag);
 
-            // Toque (mobile): rolagem nativa conta como interação
-            wrapper.addEventListener('touchstart', markInteraction, { passive: true });
-            wrapper.addEventListener('touchmove', markInteraction, { passive: true });
-
             // Trackpad/scroll horizontal conta como interação
             wrapper.addEventListener('wheel', function (e) {
-                if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) markInteraction();
+                if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+                    offset += e.deltaX;
+                    normalize();
+                    apply();
+                    markInteraction();
+                }
             }, { passive: true });
 
             window.addEventListener('resize', measure);
-            window.addEventListener('load', measure);
+            window.addEventListener('load', function () { measure(); apply(); });
             measure();
+            apply();
             requestAnimationFrame(tick);
         })();
     </script>
